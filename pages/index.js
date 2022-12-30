@@ -1,8 +1,9 @@
 import { fabric } from "fabric";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export default function Home() {
   let [canvas, setCanvas] = useState();
+  const canvasRef = useRef();
 
   useEffect(() => {
     let C = new fabric.Canvas("canvas", {
@@ -14,9 +15,13 @@ export default function Home() {
     C.freeDrawingBrush.color = "red";
     setCanvas(C);
   }, []);
+
   return (
     <>
-      <canvas id="canvas"></canvas>
+      <canvas ref={canvasRef} id="canvas"></canvas>
+      <button onClick={() => console.log(canvasRef.current.toDataURL())}>
+        export
+      </button>
     </>
   );
 }

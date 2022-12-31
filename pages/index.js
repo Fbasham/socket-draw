@@ -1,71 +1,63 @@
-import { fabric } from "fabric";
-import { useState, useEffect, useRef } from "react";
+import io from "socket.io-client";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
+
+let socket;
 
 export default function Home() {
-  const canvasRef = useRef();
-  let [canvas, setCanvas] = useState();
-  let [colour, setColour] = useState("black");
-  let [brush, setBrush] = useState(2);
+  const router = useRouter();
 
   useEffect(() => {
-    let canvas = new fabric.Canvas("canvas", {
-      height: 400,
-      width: 600,
-      isDrawingMode: true,
-    });
-    canvas.freeDrawingBrush.width = brush;
-    canvas.freeDrawingBrush.color = colour;
-    setCanvas(canvas);
-
-    return () => {
-      if (canvas) canvas.dispose();
-      canvas = undefined;
-    };
+    socketInitializer();
   }, []);
 
-  useEffect(() => {
-    if (!canvas) return;
-    canvas.freeDrawingBrush.width = brush;
-  }, [brush]);
+  const socketInitializer = async () => {
+    await fetch("/api/socket");
 
-  useEffect(() => {
-    if (!canvas) return;
-    canvas.freeDrawingBrush.color = colour;
-  }, [colour]);
+    socket = io();
 
-  function handleColourChange(e) {
-    setColour(e.target.value);
-    canvas.freeDrawingBrush.color = e.target.value;
+    socket.on("connect", () => console.log("connected"));
+  };
+
+  function handleCreateRoom(e) {
+    e.preventDefault();
+
+    const room = (Math.random() * 8999 + 1000) | 0;
+    console.log(room);
+    router.push({ pathname: `/${room}`, query: { socket } });
   }
 
-  function handleBrushChange(e) {
-    setBrush(e.target.value);
-    canvas.freeDrawingBrush.width = e.target.value;
+  function handleJoinRoom(e) {
+    e.preventDefault();
   }
 
   return (
-    <div className="flex flex-col justify-center items-center">
-      <div>
-        <canvas ref={canvasRef} id="canvas" className="border-2"></canvas>
-        <input
-          onChange={handleColourChange}
-          type="color"
-          className="w-8 h-9"
-        ></input>
-        <input
-          type="range"
-          min={0}
-          max={30}
-          onChange={handleBrushChange}
-          defaultValue={brush}
-        />
+    <div className="flex justify-center flex-col items-center max-4-xl">
+      <h1 className="text-3xl">Drawbauchery</h1>
+      <div className="flex gap-5">
+        <form
+          onSubmit={handleCreateRoom}
+          className="flex flex-col border-2 p-2 gap-2"
+        >
+          <label htmlFor="admin">Name:</label>
+          <input id="admin" className="border"></input>
+          <button className="bg-violet-700 text-white mt-auto hover:bg-violet-900">
+            Create Room
+          </button>
+        </form>
+        <form
+          onSubmit={handleJoinRoom}
+          className="flex flex-col border-2 p-2 gap-2"
+        >
+          <label htmlFor="name">Name:</label>
+          <input id="name" className="border"></input>
+          <label htmlFor="room">Room:</label>
+          <input id="room" className="border"></input>
+          <button className="bg-violet-700 text-white hover:bg-violet-900">
+            Join Room
+          </button>
+        </form>
       </div>
-      <button
-        onClick={() => console.log(canvasRef.current.toDataURL())}
-        className="bg-blue-700 text-white py-1 px-2 rounded hover:bg-blue-900"
-      >
-        export
-      </button>
     </div>
   );
 }

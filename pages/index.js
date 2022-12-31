@@ -1,6 +1,6 @@
-import io from "socket.io-client";
-import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
+import { v4 } from "uuid";
+import { useEffect } from "react";
 
 let socket;
 
@@ -8,27 +8,26 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    socketInitializer();
+    if (!sessionStorage.getItem("clientId")) {
+      sessionStorage.setItem("clientId", v4());
+    }
   }, []);
-
-  const socketInitializer = async () => {
-    await fetch("/api/socket");
-
-    socket = io();
-
-    socket.on("connect", () => console.log("connected"));
-  };
 
   function handleCreateRoom(e) {
     e.preventDefault();
 
     const room = (Math.random() * 8999 + 1000) | 0;
-    console.log(room);
-    router.push({ pathname: `/${room}`, query: { socket } });
+    sessionStorage.setItem("name", e.target.admin.value);
+    sessionStorage.setItem("room", room);
+    router.push(`/${room}`);
   }
 
   function handleJoinRoom(e) {
     e.preventDefault();
+
+    sessionStorage.setItem("name", e.target.name.value);
+    sessionStorage.setItem("room", e.target.room.value);
+    router.push(`/${e.target.room.value}`);
   }
 
   return (

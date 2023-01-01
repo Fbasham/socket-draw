@@ -30,6 +30,10 @@ export default function SocketHandler(req, res) {
 
       io.to(room).emit("update-data", rooms[room]);
     });
+
+    socket.on("canvas-to-server", ({ room, img }) => {
+      io.to(room).emit("canvas-to-room", img);
+    });
   });
 
   res.end();

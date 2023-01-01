@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import io from "socket.io-client";
+import Canvas from "../components/Canvas";
 
 let socket;
 
@@ -25,7 +26,7 @@ export default function Room() {
       clientId: sessionStorage.getItem("clientId"),
       name: sessionStorage.getItem("name"),
     });
-    socket.on("update-data", (data) => (console.log(data), setData(data)));
+    socket.on("update-data", (data) => setData(data));
   };
 
   return (
@@ -34,6 +35,8 @@ export default function Room() {
       {data?.players?.map((e, i) => (
         <p key={i}>{e.name}</p>
       ))}
+
+      <Canvas room={router.query?.room} socket={socket} />
     </div>
   );
 }
